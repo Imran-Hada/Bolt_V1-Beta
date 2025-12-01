@@ -1,2 +1,0 @@
-('C:\\Users\\Autom\\OneDrive\\Documents\\Codex_App\\KK\\Bolt_V1\\build\\bolt\\PYZ-00.pyz',
- [])
