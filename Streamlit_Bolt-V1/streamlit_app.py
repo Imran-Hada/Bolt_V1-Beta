@@ -8,11 +8,15 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import pandas as pd
 import streamlit as st
 
-import bolt_app.core as core
-from bolt_app.core import DISPLAY_MATERIALS, Vis, dimensionner, load_tete_vis_table
+ROOT = Path(__file__).resolve().parent
+SRC_DIR = ROOT / "src"
+if SRC_DIR.exists():
+    sys.path.append(str(SRC_DIR))
+
+import bolt_app.core as core  # type: ignore
+from bolt_app.core import DISPLAY_MATERIALS, Vis, dimensionner, load_tete_vis_table  # type: ignore
 
 # Paths & assets
-ROOT = Path(__file__).resolve().parent
 ASSETS_DIR = ROOT / "assets"
 
 
