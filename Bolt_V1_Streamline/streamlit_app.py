@@ -129,13 +129,18 @@ with tab_calcul:
     col_left, col_right = st.columns([1.4, 1])
     with col_left:
         st.subheader("Géométrie")
-        dn = st.selectbox("Diamètre nominal (M-)", [f"{d:g}" for d in diam_values] or ["8", "10", "12"], index=diam_values.index(12.0) if 12.0 in diam_values else 0)
+        dn = st.selectbox(
+            "Diamètre nominal (M-)",
+            [f"{d:g}" for d in diam_values] or ["8", "10", "12"],
+            index=diam_values.index(12.0) if 12.0 in diam_values else 0,
+            key="calc_dn",
+        )
 
         head_display_map = {name: HEAD_LABEL_MAP.get(name, name) for name in head_types}
         head_values = [head_display_map[name] for name in head_types] if head_types else list(DEFAULT_HEAD_TYPES)
         if "Autre" not in head_values:
             head_values.append("Autre")
-        head_choice = st.selectbox("Tête de vis", head_values)
+        head_choice = st.selectbox("Tête de vis", head_values, key="calc_head_type")
 
         iso_dh = None
         try:
@@ -145,54 +150,90 @@ with tab_calcul:
 
         manual_dh = None
         if iso_dh is None:
-            manual_dh = st.text_input("Diamètre tête de vis (mm) – saisie manuelle si non ISO", "")
+            manual_dh = st.text_input(
+                "Diamètre tête de vis (mm) – saisie manuelle si non ISO",
+                "",
+                key="calc_manual_dh",
+            )
         else:
             st.info(f"Diamètre tête de vis ISO : {iso_dh:g} mm", icon="ℹ️")
 
         st.markdown("---")
         st.subheader("Matériaux")
-        mat_vis = st.selectbox("Vis", materials, index=materials.index("Acier") if "Acier" in materials else 0)
-        mat_body = st.selectbox("Pièce taraudée", materials, index=materials.index(mat_vis) if mat_vis in materials else 0)
-        is_filet_lub = st.checkbox("Filets lubrifiés", value=False)
+        mat_vis = st.selectbox(
+            "Vis",
+            materials,
+            index=materials.index("Acier") if "Acier" in materials else 0,
+            key="calc_mat_vis",
+        )
+        mat_body = st.selectbox(
+            "Pièce taraudée",
+            materials,
+            index=materials.index(mat_vis) if mat_vis in materials else 0,
+            key="calc_mat_body",
+        )
+        is_filet_lub = st.checkbox("Filets lubrifiés", value=False, key="calc_filet_lub")
 
-        has_under_head = st.checkbox("Autre matériau bloc sous-tête", value=False)
+        has_under_head = st.checkbox("Autre matériau bloc sous-tête", value=False, key="calc_under_head")
         mat_sous_tete = None
         if has_under_head:
-            mat_sous_tete = st.selectbox("Matériau bloc sous-tête", materials, index=materials.index(mat_body) if mat_body in materials else 0)
+            mat_sous_tete = st.selectbox(
+                "Matériau bloc sous-tête",
+                materials,
+                index=materials.index(mat_body) if mat_body in materials else 0,
+                key="calc_mat_sous_tete",
+            )
         is_sous_tete_lub = False
         if has_under_head:
-            is_sous_tete_lub = st.checkbox("Sous-tête lubrifiée", value=False)
+            is_sous_tete_lub = st.checkbox("Sous-tête lubrifiée", value=False, key="calc_sous_tete_lub")
 
         has_washer = False
         mat_washer = None
         mat_under_washer = None
         if not has_under_head:
-            has_washer = st.checkbox("Présence d'une rondelle", value=False)
+            has_washer = st.checkbox("Présence d'une rondelle", value=False, key="calc_has_washer")
             if has_washer:
-                mat_washer = st.selectbox("Matériau rondelle", materials, index=materials.index(mat_body) if mat_body in materials else 0)
-                mat_under_washer = st.selectbox("Matériau bloc sous-rondelle", materials, index=materials.index(mat_body) if mat_body in materials else 0)
+                mat_washer = st.selectbox(
+                    "Matériau rondelle",
+                    materials,
+                    index=materials.index(mat_body) if mat_body in materials else 0,
+                    key="calc_mat_washer",
+                )
+                mat_under_washer = st.selectbox(
+                    "Matériau bloc sous-rondelle",
+                    materials,
+                    index=materials.index(mat_body) if mat_body in materials else 0,
+                    key="calc_mat_under_washer",
+                )
 
         st.markdown("---")
         st.subheader("Frottements")
-        friction_mode = st.radio("Mode", ["max", "min"], index=0, horizontal=True, help="Valeurs CSV: max ou min")
-        manual_mu = st.checkbox("Saisir manuellement µ")
+        friction_mode = st.radio(
+            "Mode",
+            ["max", "min"],
+            index=0,
+            horizontal=True,
+            help="Valeurs CSV: max ou min",
+            key="calc_friction_mode",
+        )
+        manual_mu = st.checkbox("Saisir manuellement µ", key="calc_manual_mu")
         mu_filet_manual = mu_sous_manual = None
         if manual_mu:
             c1, c2 = st.columns(2)
             with c1:
-                mu_filet_manual = st.text_input("Frottement des filets", "")
+                mu_filet_manual = st.text_input("Frottement des filets", "", key="calc_mu_filet")
             with c2:
-                mu_sous_manual = st.text_input("Frottement sous tête", "")
+                mu_sous_manual = st.text_input("Frottement sous tête", "", key="calc_mu_sous")
 
         st.markdown("---")
         st.subheader("Chargement")
-        cpl = st.text_input("Couple", "40")
-        unit = st.selectbox("Unités", ["N.mm", "N.m"], index=1)
+        cpl = st.text_input("Couple", "40", key="calc_cpl")
+        unit = st.selectbox("Unités", ["N.mm", "N.m"], index=1, key="calc_unit")
 
         st.markdown("---")
         st.subheader("Actions")
-        calc_btn = st.button("Calculer")
-        reset_btn = st.button("Réinitialiser")
+        calc_btn = st.button("Calculer", key="calc_btn")
+        reset_btn = st.button("Réinitialiser", key="calc_reset_btn")
 
         if reset_btn:
             st.experimental_rerun()
@@ -260,15 +301,50 @@ with tab_calcul:
                 st.write("Angle filet : 60° ISO 68-1")
                 col_res1, col_res2 = st.columns(2)
                 with col_res1:
-                    st.text_input("Effort de Serrage Ft (N)", f"{effort:.0f}", key="ft_res", disabled=False)
-                    st.text_input("Force de résistance au glissement (N)", f"{vis.force_resistance_glissement:.0f}", disabled=True)
-                    st.text_input("Contrainte de Traction dans les filets (MPa)", f"{vis.contrainte_traction:.1f}", disabled=True)
-                    st.text_input("Contrainte de Torsion dans les filets (MPa)", f"{vis.contrainte_torsion:.1f}", disabled=True)
+                    st.text_input("Effort de Serrage Ft (N)", f"{effort:.0f}", key="calc_ft_res", disabled=False)
+                    st.text_input(
+                        "Force de résistance au glissement (N)",
+                        f"{vis.force_resistance_glissement:.0f}",
+                        key="calc_gliss_res",
+                        disabled=True,
+                    )
+                    st.text_input(
+                        "Contrainte de Traction dans les filets (MPa)",
+                        f"{vis.contrainte_traction:.1f}",
+                        key="calc_traction_res",
+                        disabled=True,
+                    )
+                    st.text_input(
+                        "Contrainte de Torsion dans les filets (MPa)",
+                        f"{vis.contrainte_torsion:.1f}",
+                        key="calc_torsion_res",
+                        disabled=True,
+                    )
                 with col_res2:
-                    st.text_input("Contrainte Equivalente VM (MPa)", f"{vis.contrainte_vm:.1f}", disabled=True)
-                    st.text_input("Pertes de frottement dans les filets (%)", f"{vis.pertes_frottements_filet:.0f}", disabled=True)
-                    st.text_input("Pertes de frottement sous la tête (%)", f"{vis.pertes_frottements_tete:.0f}", disabled=True)
-                    st.text_input("Pertes totales (%)", f"{vis.pertes_frottements_totale:.0f}", disabled=True)
+                    st.text_input(
+                        "Contrainte Equivalente VM (MPa)",
+                        f"{vis.contrainte_vm:.1f}",
+                        key="calc_vm_res",
+                        disabled=True,
+                    )
+                    st.text_input(
+                        "Pertes de frottement dans les filets (%)",
+                        f"{vis.pertes_frottements_filet:.0f}",
+                        key="calc_pertes_filet_res",
+                        disabled=True,
+                    )
+                    st.text_input(
+                        "Pertes de frottement sous la tête (%)",
+                        f"{vis.pertes_frottements_tete:.0f}",
+                        key="calc_pertes_tete_res",
+                        disabled=True,
+                    )
+                    st.text_input(
+                        "Pertes totales (%)",
+                        f"{vis.pertes_frottements_totale:.0f}",
+                        key="calc_pertes_total_res",
+                        disabled=True,
+                    )
             except Exception as exc:
                 st.error(str(exc))
 
@@ -288,8 +364,18 @@ with tab_dim:
     col_a, col_b = st.columns([1.2, 1])
     with col_a:
         st.subheader("Géométrie")
-        diam_min = st.selectbox("Diamètre min (M-)", [f"{d:g}" for d in diam_values] or ["8", "10"], index=diam_values.index(12.0) if 12.0 in diam_values else 0)
-        diam_max = st.selectbox("Diamètre max (M-)", [f"{d:g}" for d in diam_values] or ["10", "12"], index=diam_values.index(14.0) if 14.0 in diam_values else 0)
+        diam_min = st.selectbox(
+            "Diamètre min (M-)",
+            [f"{d:g}" for d in diam_values] or ["8", "10"],
+            index=diam_values.index(12.0) if 12.0 in diam_values else 0,
+            key="dim_diam_min",
+        )
+        diam_max = st.selectbox(
+            "Diamètre max (M-)",
+            [f"{d:g}" for d in diam_values] or ["10", "12"],
+            index=diam_values.index(14.0) if 14.0 in diam_values else 0,
+            key="dim_diam_max",
+        )
 
         # Vérifie la disponibilité ISO
         diam_candidates = [
@@ -303,17 +389,33 @@ with tab_dim:
             manual_dh_dim = st.text_input(
                 "Diamètre tête de vis (mm) – requis car pas de taille ISO dans cet intervalle",
                 "",
+                key="dim_manual_dh",
             )
 
         st.markdown("---")
         st.subheader("Matériaux")
-        mat_vis_dim = st.selectbox("Vis", materials, index=materials.index("Acier") if "Acier" in materials else 0)
-        mat_body_dim = st.selectbox("Pièce taraudée", materials, index=materials.index(mat_vis_dim) if mat_vis_dim in materials else 0)
+        mat_vis_dim = st.selectbox(
+            "Vis",
+            materials,
+            index=materials.index("Acier") if "Acier" in materials else 0,
+            key="dim_mat_vis",
+        )
+        mat_body_dim = st.selectbox(
+            "Pièce taraudée",
+            materials,
+            index=materials.index(mat_vis_dim) if mat_vis_dim in materials else 0,
+            key="dim_mat_body",
+        )
 
         has_under_head_dim = st.checkbox("Autre matériau bloc sous-tête", value=False, key="dim_under")
         mat_sous_dim = None
         if has_under_head_dim:
-            mat_sous_dim = st.selectbox("Matériau bloc sous-tête", materials, index=materials.index(mat_body_dim) if mat_body_dim in materials else 0)
+            mat_sous_dim = st.selectbox(
+                "Matériau bloc sous-tête",
+                materials,
+                index=materials.index(mat_body_dim) if mat_body_dim in materials else 0,
+                key="dim_mat_sous",
+            )
         is_filet_lub_dim = st.checkbox("Filets lubrifiés", value=False, key="dim_lub")
 
         has_washer_dim = False
@@ -322,8 +424,18 @@ with tab_dim:
         if not has_under_head_dim:
             has_washer_dim = st.checkbox("Présence d'une rondelle", value=False, key="dim_washer")
             if has_washer_dim:
-                mat_washer_dim = st.selectbox("Matériau rondelle", materials, index=materials.index(mat_body_dim) if mat_body_dim in materials else 0)
-                mat_under_washer_dim = st.selectbox("Matériau bloc sous-rondelle", materials, index=materials.index(mat_body_dim) if mat_body_dim in materials else 0)
+                mat_washer_dim = st.selectbox(
+                    "Matériau rondelle",
+                    materials,
+                    index=materials.index(mat_body_dim) if mat_body_dim in materials else 0,
+                    key="dim_mat_washer",
+                )
+                mat_under_washer_dim = st.selectbox(
+                    "Matériau bloc sous-rondelle",
+                    materials,
+                    index=materials.index(mat_body_dim) if mat_body_dim in materials else 0,
+                    key="dim_mat_under_washer",
+                )
 
         st.markdown("---")
         st.subheader("Frottements")
@@ -339,13 +451,13 @@ with tab_dim:
 
         st.markdown("---")
         st.subheader("Chargement")
-        effort_cible = st.text_input("Effort de serrage cible (N)", "10000")
-        couple_max = st.text_input("Couple maximal constructeur", "40")
+        effort_cible = st.text_input("Effort de serrage cible (N)", "10000", key="dim_effort_cible")
+        couple_max = st.text_input("Couple maximal constructeur", "40", key="dim_couple_max")
         unit_dim = st.selectbox("Unités", ["N.mm", "N.m"], index=1, key="dim_unit")
 
         st.markdown("---")
-        calc_dim_btn = st.button("Calculer (dimensionnement)")
-        reset_dim_btn = st.button("Réinitialiser (dimensionnement)")
+        calc_dim_btn = st.button("Calculer (dimensionnement)", key="dim_calc_btn")
+        reset_dim_btn = st.button("Réinitialiser (dimensionnement)", key="dim_reset_btn")
         if reset_dim_btn:
             st.experimental_rerun()
 
