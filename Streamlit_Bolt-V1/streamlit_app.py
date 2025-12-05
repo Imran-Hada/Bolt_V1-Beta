@@ -24,6 +24,7 @@ def resource_path(*parts: str) -> Path:
     return ROOT.joinpath(*parts)
 
 
+<<<<<<< HEAD
 def safe_rerun() -> None:
     """Relance l'application en utilisant l'API disponible."""
     try:
@@ -35,6 +36,8 @@ def safe_rerun() -> None:
             st.warning("Impossible de relancer l'application automatiquement.")
 
 
+=======
+>>>>>>> 25ee0f1bb28ee98a52f500a42ccb57dae7a7e43d
 # Point core to packaged assets
 core.PAS_STD_FILE = resource_path("assets", "Pas-std.csv")
 core.FROTTEMENT_FILE = resource_path("assets", "Frottement.csv")
@@ -300,7 +303,11 @@ with tabs[0]:
         compute_calc = col_btn_calc.button("Calculer", key="calc_btn")
         if col_btn_reset.button("Reinitialiser", key="calc_reset"):
             st.session_state.clear()
+<<<<<<< HEAD
             safe_rerun()
+=======
+            st.experimental_rerun()
+>>>>>>> 25ee0f1bb28ee98a52f500a42ccb57dae7a7e43d
 
         if compute_calc:
             try:
@@ -346,6 +353,7 @@ with tabs[0]:
                 st.markdown("---")
                 st.markdown("### Efforts, Contraintes et Pertes par frottements")
                 st.markdown("**1) Effort de serrage (Pre-charge)**")
+<<<<<<< HEAD
                 st.metric("Ft (N)", f"{effort:.0f}")
 
                 st.markdown("**2) Force de resistance au glissement**")
@@ -362,6 +370,50 @@ with tabs[0]:
                 col_p1.metric("Frottement filets (%)", f"{vis.pertes_frottements_filet:.0f}")
                 col_p2.metric("Frottement sous tete (%)", f"{vis.pertes_frottements_tete:.0f}")
                 col_p3.metric("Pertes totales (%)", f"{vis.pertes_frottements_totale:.0f}")
+=======
+                st.text_input("Ft (N)", value=f"{effort:.0f}", disabled=True)
+
+                st.markdown("**2) Force de resistance au glissement**")
+                st.text_input(
+                    "Force de Cisaillement limite (N)",
+                    value=f"{vis.force_resistance_glissement:.0f}",
+                    disabled=True,
+                )
+
+                st.markdown("**3) Contraintes**")
+                st.text_input(
+                    "Contrainte de Traction dans les filets (MPa)",
+                    value=f"{vis.contrainte_traction:.1f}",
+                    disabled=True,
+                )
+                st.text_input(
+                    "Contrainte de Torsion dans les filets (MPa)",
+                    value=f"{vis.contrainte_torsion:.1f}",
+                    disabled=True,
+                )
+                st.text_input(
+                    "Contrainte Equivalente VM (MPa)",
+                    value=f"{vis.contrainte_vm:.1f}",
+                    disabled=True,
+                )
+
+                st.markdown("**4) Pertes par frottements**")
+                st.text_input(
+                    "Pertes de frottement dans les filets (%)",
+                    value=f"{vis.pertes_frottements_filet:.0f}",
+                    disabled=True,
+                )
+                st.text_input(
+                    "Pertes de frottement sous la tete (%)",
+                    value=f"{vis.pertes_frottements_tete:.0f}",
+                    disabled=True,
+                )
+                st.text_input(
+                    "Pertes totales (%)",
+                    value=f"{vis.pertes_frottements_totale:.0f}",
+                    disabled=True,
+                )
+>>>>>>> 25ee0f1bb28ee98a52f500a42ccb57dae7a7e43d
             except Exception as exc:
                 st.error(str(exc))
 
@@ -461,7 +513,11 @@ with tabs[1]:
         compute_dim = col_btn_calc_dim.button("Calculer", key="dim_btn")
         if col_btn_reset_dim.button("Reinitialiser", key="dim_reset"):
             st.session_state.clear()
+<<<<<<< HEAD
             safe_rerun()
+=======
+            st.experimental_rerun()
+>>>>>>> 25ee0f1bb28ee98a52f500a42ccb57dae7a7e43d
 
         if compute_dim:
             try:
