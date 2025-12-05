@@ -8,16 +8,31 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import pandas as pd
 import streamlit as st
 
-import bolt_app.core as core
-from bolt_app.core import DISPLAY_MATERIALS, Vis, dimensionner, load_tete_vis_table
+ROOT = Path(__file__).resolve().parent
+SRC_DIR = ROOT / "src"
+if SRC_DIR.exists():
+    sys.path.append(str(SRC_DIR))
+
+import bolt_app.core as core  # type: ignore
+from bolt_app.core import DISPLAY_MATERIALS, Vis, dimensionner, load_tete_vis_table  # type: ignore
 
 # Paths & assets
-ROOT = Path(__file__).resolve().parent
 ASSETS_DIR = ROOT / "assets"
 
 
 def resource_path(*parts: str) -> Path:
     return ROOT.joinpath(*parts)
+
+
+def safe_rerun() -> None:
+    """Relance l'application en utilisant l'API disponible."""
+    try:
+        st.rerun()
+    except Exception:
+        try:
+            st.experimental_rerun()  # Compatibilite versions plus anciennes
+        except Exception:
+            st.warning("Impossible de relancer l'application automatiquement.")
 
 
 # Point core to packaged assets
@@ -285,7 +300,7 @@ with tabs[0]:
         compute_calc = col_btn_calc.button("Calculer", key="calc_btn")
         if col_btn_reset.button("Reinitialiser", key="calc_reset"):
             st.session_state.clear()
-            st.experimental_rerun()
+            safe_rerun()
 
         if compute_calc:
             try:
@@ -331,48 +346,22 @@ with tabs[0]:
                 st.markdown("---")
                 st.markdown("### Efforts, Contraintes et Pertes par frottements")
                 st.markdown("**1) Effort de serrage (Pre-charge)**")
-                st.text_input("Ft (N)", value=f"{effort:.0f}", disabled=True)
+                st.metric("Ft (N)", f"{effort:.0f}")
 
                 st.markdown("**2) Force de resistance au glissement**")
-                st.text_input(
-                    "Force de Cisaillement limite (N)",
-                    value=f"{vis.force_resistance_glissement:.0f}",
-                    disabled=True,
-                )
+                st.metric("Force de Cisaillement limite (N)", f"{vis.force_resistance_glissement:.0f}")
 
                 st.markdown("**3) Contraintes**")
-                st.text_input(
-                    "Contrainte de Traction dans les filets (MPa)",
-                    value=f"{vis.contrainte_traction:.1f}",
-                    disabled=True,
-                )
-                st.text_input(
-                    "Contrainte de Torsion dans les filets (MPa)",
-                    value=f"{vis.contrainte_torsion:.1f}",
-                    disabled=True,
-                )
-                st.text_input(
-                    "Contrainte Equivalente VM (MPa)",
-                    value=f"{vis.contrainte_vm:.1f}",
-                    disabled=True,
-                )
+                col_c1, col_c2, col_c3 = st.columns(3)
+                col_c1.metric("Traction filets (MPa)", f"{vis.contrainte_traction:.1f}")
+                col_c2.metric("Torsion filets (MPa)", f"{vis.contrainte_torsion:.1f}")
+                col_c3.metric("Contrainte VM (MPa)", f"{vis.contrainte_vm:.1f}")
 
                 st.markdown("**4) Pertes par frottements**")
-                st.text_input(
-                    "Pertes de frottement dans les filets (%)",
-                    value=f"{vis.pertes_frottements_filet:.0f}",
-                    disabled=True,
-                )
-                st.text_input(
-                    "Pertes de frottement sous la tete (%)",
-                    value=f"{vis.pertes_frottements_tete:.0f}",
-                    disabled=True,
-                )
-                st.text_input(
-                    "Pertes totales (%)",
-                    value=f"{vis.pertes_frottements_totale:.0f}",
-                    disabled=True,
-                )
+                col_p1, col_p2, col_p3 = st.columns(3)
+                col_p1.metric("Frottement filets (%)", f"{vis.pertes_frottements_filet:.0f}")
+                col_p2.metric("Frottement sous tete (%)", f"{vis.pertes_frottements_tete:.0f}")
+                col_p3.metric("Pertes totales (%)", f"{vis.pertes_frottements_totale:.0f}")
             except Exception as exc:
                 st.error(str(exc))
 
@@ -472,7 +461,7 @@ with tabs[1]:
         compute_dim = col_btn_calc_dim.button("Calculer", key="dim_btn")
         if col_btn_reset_dim.button("Reinitialiser", key="dim_reset"):
             st.session_state.clear()
-            st.experimental_rerun()
+            safe_rerun()
 
         if compute_dim:
             try:
